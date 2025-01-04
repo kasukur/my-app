@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { signRequest } from '../utils/aws-signing';
 import './MovieList.css';
+
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? '/api'
+  : '/prod';
 
 const MovieList = () => {
   const [movies, setMovies] = useState([]);
@@ -16,15 +21,53 @@ const MovieList = () => {
     fetchMovies();
   }, []);
 
+  const makeRequest = async (method, path, data = undefined) => {
+    try {
+      const headers = await signRequest(method, path, data);
+      console.log(`Making ${method} request to ${path} with headers:`, headers);
+      
+      const config = {
+        method,
+        url: `${API_BASE_URL}${path}`,
+        headers,
+        data
+      };
+
+      const response = await axios(config);
+      console.log(`${method} response:`, response.data);
+      return response;
+    } catch (error) {
+      console.error(`${method} request failed:`, {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
+  };
+
   const fetchMovies = async () => {
     try {
-      const response = await axios.get('/prod/movies');
-      setMovies(response.data);
-      setLoading(false);
+      const response = await makeRequest('GET', '/movies');
+      const movieData = response.data.Items || response.data || [];
+      
+      if (!Array.isArray(movieData)) {
+        console.error('Received non-array data:', movieData);
+        if (response.data.message) {
+          setError(`API Error: ${response.data.message}`);
+        } else {
+          setError('Invalid data format received');
+        }
+        setMovies([]);
+      } else {
+        setMovies(movieData);
+        setError(null);
+      }
     } catch (err) {
-      setError('Failed to fetch movies');
+      const errorMessage = err.response?.data?.message || err.message;
+      setError(`Failed to fetch movies: ${errorMessage}`);
+    } finally {
       setLoading(false);
-      console.error('Error fetching movies:', err);
     }
   };
 
@@ -39,22 +82,22 @@ const MovieList = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/prod/movies', newMovie);
+      await makeRequest('POST', '/movies', newMovie);
       setNewMovie({ title: '', year: '', director: '' });
       fetchMovies();
     } catch (err) {
-      setError('Failed to add movie');
-      console.error('Error adding movie:', err);
+      const errorMessage = err.response?.data?.message || err.message;
+      setError(`Failed to add movie: ${errorMessage}`);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/prod/movies/${id}`);
+      await makeRequest('DELETE', `/movies/${id}`);
       fetchMovies();
     } catch (err) {
-      setError('Failed to delete movie');
-      console.error('Error deleting movie:', err);
+      const errorMessage = err.response?.data?.message || err.message;
+      setError(`Failed to delete movie: ${errorMessage}`);
     }
   };
 
