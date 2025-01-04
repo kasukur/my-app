@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { signRequest } from '../utils/aws-signing';
+import { signRequest, API_URL } from '../utils/aws-signing';
 import './MovieList.css';
-
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? '/api'
-  : '/prod';
 
 const MovieList = () => {
   const [movies, setMovies] = useState([]);
@@ -24,14 +20,22 @@ const MovieList = () => {
   const makeRequest = async (method, path, data = undefined) => {
     try {
       const headers = await signRequest(method, path, data);
-      console.log(`Making ${method} request to ${path} with headers:`, headers);
       
       const config = {
         method,
-        url: `${API_BASE_URL}${path}`,
+        url: `${API_URL}${path}`,
         headers,
         data
       };
+
+      console.log('Making request:', {
+        method,
+        url: config.url,
+        headers: {
+          ...headers,
+          Authorization: headers.authorization?.substring(0, 20) + '...'
+        }
+      });
 
       const response = await axios(config);
       console.log(`${method} response:`, response.data);
@@ -40,7 +44,8 @@ const MovieList = () => {
       console.error(`${method} request failed:`, {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        headers: error.config?.headers
       });
       throw error;
     }

@@ -4,6 +4,10 @@ import { Sha256 } from '@aws-crypto/sha256-browser';
 
 const region = 'us-east-1';
 const service = 'execute-api';
+const apiId = 'zafokk1i96';
+const stage = 'prod';
+
+export const API_URL = `https://${apiId}.execute-api.${region}.amazonaws.com/${stage}`;
 
 const getCredentials = () => {
   const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
@@ -34,22 +38,33 @@ export async function signRequest(method, path, body = undefined) {
       sha256: Sha256
     });
 
-    const url = new URL(path, 'https://zafokk1i96.execute-api.us-east-1.amazonaws.com');
-    console.log('Signing request for URL:', url.toString());
+    // Ensure path starts with a slash but doesn't include the stage
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    const apiPath = `/${stage}${cleanPath}`;
     
     const request = new HttpRequest({
-      hostname: url.hostname,
-      path: url.pathname,
+      hostname: `${apiId}.execute-api.${region}.amazonaws.com`,
+      path: apiPath,
       method,
       headers: {
         'Content-Type': 'application/json',
-        host: url.hostname
       },
       body: body ? JSON.stringify(body) : undefined
     });
 
+    console.log('Signing request:', {
+      url: `https://${request.hostname}${request.path}`,
+      method: request.method,
+      body: request.body
+    });
+
     const signedRequest = await signer.sign(request);
+    
+    // Remove headers that can't be set by the browser
+    delete signedRequest.headers.host;
+    
     console.log('Signed headers:', signedRequest.headers);
+
     return signedRequest.headers;
   } catch (error) {
     console.error('Error signing request:', error);
