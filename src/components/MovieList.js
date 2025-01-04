@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_URL } from '../config';
 import './MovieList.css';
 
 const MovieList = () => {
@@ -19,7 +18,7 @@ const MovieList = () => {
 
   const fetchMovies = async () => {
     try {
-      const response = await axios.get(`${API_URL}/movies`);
+      const response = await axios.get('/prod/movies');
       setMovies(response.data);
       setLoading(false);
     } catch (err) {
@@ -40,7 +39,7 @@ const MovieList = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/movies`, newMovie);
+      await axios.post('/prod/movies', newMovie);
       setNewMovie({ title: '', year: '', director: '' });
       fetchMovies();
     } catch (err) {
@@ -51,7 +50,7 @@ const MovieList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/movies/${id}`);
+      await axios.delete(`/prod/movies/${id}`);
       fetchMovies();
     } catch (err) {
       setError('Failed to delete movie');
