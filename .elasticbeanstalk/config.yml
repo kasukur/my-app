@@ -5,6 +5,8 @@ branch-defaults:
   main:
     environment: MyReactApp-env
     group_suffix: null
+  master:
+    environment: MyReactApp-env
 global:
   application_name: my-react-app
   branch: null
@@ -19,3 +21,15 @@ global:
   repository: null
   sc: git
   workspace_type: Application
+
+option_settings:
+  aws:ec2:instances:
+    InstanceTypes: t2.micro
+  aws:autoscaling:asg:
+    MinSize: '1'
+    MaxSize: '2'
+  aws:elasticbeanstalk:environment:
+    ServiceRole: aws-elasticbeanstalk-service-role
+  aws:ec2:launchtemplate:
+    IamInstanceProfile: aws-elasticbeanstalk-ec2-role
+    SecurityGroups: default
