@@ -1,23 +1,18 @@
 branch-defaults:
   master:
     environment: MyReactApp-env
+    group_suffix: null
 global:
-  application_name: my-react-app
-  default_platform: Docker running on 64bit Amazon Linux 2/4.0.6
+  application_name: my-app
+  branch: null
+  default_ec2_keyname: null
+  default_platform: Docker
   default_region: us-east-1
   include_git_submodules: true
   instance_profile: null
-  platform_name: Docker running on 64bit Amazon Linux 2
-  platform_version: 4.0.6
+  platform_name: null
+  platform_version: null
+  profile: null
+  repository: null
   sc: git
   workspace_type: Application
-
-option_settings:
-  aws:elasticbeanstalk:environment:
-    ServiceRole: aws-elasticbeanstalk-service-role
-  aws:elasticbeanstalk:environment:process:default:
-    HealthCheckPath: /
-    Port: 80
-    Protocol: HTTP
-  aws:elasticbeanstalk:cloudwatch:logs:
-    StreamLogs: true
