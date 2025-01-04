@@ -1,17 +1,8 @@
 version: 1.0
-runtime: docker
 build:
   dockerfile: Dockerfile
-  commands:
-    pre-build:
-      - echo "Starting build process..."
-      - pwd
-      - ls -la
-    build:
-      - echo "Building application..."
-    post-build:
-      - echo "Build completed"
 run:
+  runtime-version: latest
   command: nginx -g "daemon off;"
   network:
     port: 8080
